@@ -1,7 +1,4 @@
-/* eslint-disable no-underscore-dangle */
-import { createSocket } from 'dgram';
-import { Buffer } from 'buffer';
-// import { deflate } from 'zlib';
+const dgram = require('dgram');
 
 const endianNess = () => {
   const uInt32 = new Uint32Array([0x11223344]);
@@ -19,39 +16,42 @@ const endianNess = () => {
 // @ts-ignore
 const BIG_ENDIAN = endianNess === 'Big Endian';
 
-const XPlaneClient = function constructor(settings) {
-  const host = settings.host || '127.0.0.1';
-  const port = settings.port || 49000;
-  const debug = settings.debug || false;
-  let client = null;
-  const self = this;
+let client;
 
-  this.dataRefs = [];
-  this.index = 0;
-  this.initialized = false;
+module.exports = class XPlaneClient {
+  constructor(settings) {
+    const self = this;
 
-  client = null;
+    this.host = settings.host || '127.0.0.1';
+    this.port = settings.port || 49000;
+    this.debug = settings.debug || false;
+    this.dataRefs = [];
+    this.index = 0;
+    this.initialized = false;
 
-  this.checkConnection = () => !client && this.initConnection();
-  this.isConnected = () => client;
-  this.connectionInfo = () => client;
+    client = null;
 
-  this._sendBuffer = function _sendBuffer(data) {
-    self.initConnection();
+    this.checkConnection = () => !client && this.initConnection();
+    this.isConnected = () => client;
+    this.connectionInfo = () => client;
+  }
+
+  _sendBuffer(data) {
+    this.initConnection();
 
     // sending msg
     // eslint-disable-next-line no-unused-vars
     // console.log('sending:', data);
-    client.send(data, port, host, function cb(error /* , bytes */) {
+    client.send(data, this.port, this.host, function cb(error /* , bytes */) {
       if (error) {
         client.close();
         client = null;
         console.error(`XPlaneClient failed to send data X-Plane: ${error}`);
       }
     });
-  };
+  }
 
-  this.requestDataRef = function requestDataRef(
+  requestDataRef(
     dataRef,
     timesPerSecond,
     callback = undefined,
@@ -64,7 +64,7 @@ const XPlaneClient = function constructor(settings) {
     for (let i = 0; i < this.dataRefs.length; i += 1) {
       if (this.dataRefs[i].dataRef === dataRef) {
         index = i;
-        if (debug) {
+        if (this.debug) {
           console.log(
             `found and using existing dataref ${dataRef} on index ${index}`,
           );
@@ -91,9 +91,9 @@ const XPlaneClient = function constructor(settings) {
     buffer.write(dataRef, 13);
 
     this._sendBuffer(buffer);
-  };
+  }
 
-  this.setDataRef = function setDataRef(dataRef, value) {
+  setDataRef(dataRef, value) {
     const buffer = Buffer.alloc(509, 0x20);
     buffer.write('DREF', 0, 4);
     buffer.writeInt8(0x00, 4);
@@ -105,25 +105,27 @@ const XPlaneClient = function constructor(settings) {
     buffer.write(dataRef, 9);
     buffer.writeInt8(0x00, 9 + dataRef.length); // 0-byte terminate the string
     this._sendBuffer(buffer);
-  };
+  }
 
-  this.sendCommand = function sendCommand(command) {
+  sendCommand(command) {
     const buffer = Buffer.alloc(5 + command.length + 1);
     buffer.write('CMND', 0, 4);
     buffer.write(command, 5, command.length);
     this._sendBuffer(buffer);
-  };
+  }
 
-  this.initConnection = function initConnection() {
+  initConnection() {
+    const self = this;
+
     if (client === null) {
-      client = createSocket('udp4');
+      client = dgram.createSocket('udp4');
     } else {
       return;
     }
 
     client.on('listening', () => {
       const address = client.address();
-      if (debug) {
+      if (this.debug) {
         console.log(
           `XPlaneClient listening on ${address.address}:${address.port}`,
         );
@@ -178,7 +180,7 @@ const XPlaneClient = function constructor(settings) {
             // Only propagate the dataref value if it has changed from what it was before
             // TODO: make it possible to request all events even if not changed (more overhead)
             if (dataRef.value !== drefFltValue) {
-              if (debug) {
+              if (this.debug) {
                 console.log(
                   `[${i + 1}/${numrefs}] new value for dataRef ${
                     dataRef.dataRef
@@ -194,7 +196,7 @@ const XPlaneClient = function constructor(settings) {
                 dataRef.callback(dataRef.dataRef, drefFltValue);
               }
             }
-          } else if (debug) {
+          } else if (this.debug) {
             console.log(
               `[${
                 i + 1
@@ -206,7 +208,5 @@ const XPlaneClient = function constructor(settings) {
         }
       }
     });
-  };
+  }
 };
-
-export default XPlaneClient;

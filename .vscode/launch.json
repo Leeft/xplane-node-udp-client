@@ -4,7 +4,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "src/index.js",
+      "name": "src/server.js",
       "skipFiles": [
         "<node_internals>/**",
         "${workspaceFolder}/node_modules/**"
