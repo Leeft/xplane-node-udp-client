@@ -1,5 +1,5 @@
 {
-  "name": "xplane-node-udp-client",
+  "name": "@shiari/xplane-node-udp-client",
   "version": "0.1.0",
   "description": "X-Plane Legacy UDP client module for node applications",
   "main": "src/XPlaneLegacyClient.js",
