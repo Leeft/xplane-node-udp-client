@@ -18,7 +18,7 @@ Note that the documentation isn't very clear on whether big/little endian matter
 # Usage
 
 ```
-npm install https://github.com/Leeft/xplane-node-udp-client
+npm install --save-dev https://github.com/Leeft/xplane-node-udp-client
 ```
 
 Then import the `XPlaneLegacyClient` module into your code and use it.
