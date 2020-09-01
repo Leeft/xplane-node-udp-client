@@ -36,5 +36,13 @@
   },
   "dependencies": {
     "simple-jsonrpc-js": "git+https://github.com/jershell/simple-jsonrpc-js.git"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Leeft/xplane-node-udp-client.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Leeft/xplane-node-udp-client/issues"
+  },
+  "homepage": "https://github.com/Leeft/xplane-node-udp-client#readme"
 }
